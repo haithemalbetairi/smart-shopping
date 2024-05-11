@@ -1,0 +1,88 @@
+﻿@page "/cart-items"
+@attribute [StreamRendering]
+using Microsoft.Data.SqlClient;
+<PageTitle>Cart</PageTitle>
+
+@if (ShowTitle) {
+    <h1>Cart</h1>
+    <p>This component demonstrates showing data.</p>
+}
+
+
+@if (items == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var product in products)
+            {
+                <tr>
+                    <td>@product.Name</td>
+                    <td>@product.Quantity</td>
+                    <td>@product.Price</td>
+                    <td>@product.TotalString</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private Product[]? products;
+    private OrderItem[]? items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate streaming rendering
+        await Task.Delay(500);
+
+        var startDate = DateOnly.FromDateTime(DateTime.Now);
+        using var conn = new SqlConnection(connectionString);
+        var command = new SqlCommand("SELECT * FROM OrderItems", conn);
+        using SqlDataReader reader = command.ExecuteReader();
+
+        if (reader.HasRows)
+            {
+            while (reader.Read())
+                {
+                rows.Add($"{reader.GetInt32(0)}, {reader.GetInt32(1)}, {reader.GetInt32(2)}, {reader.GetInt32(3)}, {reader.GetString(4)}");
+        }
+        }
+        */
+
+        var products = new[] { "Meat", "Milk", "Eggs", "Bread", "Vegtables", "Fruit", "Shampoo", "Tissue Box", "Toilet Papper", "Dish Soap" };
+        items = Enumerable.Range(1, 5).Select(index => new Product
+        {
+            Name = products[Random.Shared.Next(products.Length)],
+            Quantity = Random.Shared.Next(1, 5),
+            Price = Math.Round(Random.Shared.NextDouble()*10, 2)
+        }).ToArray();
+    }
+
+    [Parameter]
+    public bool ShowTitle { get; set; } = false;
+
+    public class Product
+    {
+        public int OrderItemId { get; set; }
+        public int ProductId { get; set; }
+        public int CartId { get; set; }
+        public required string Name { get; set; }
+        public int Quantity { get; set; }
+        public double Price { get; set; }
+        public required double TotalString { get; set; }
+        public required string SaleStatus { get; set; }
+    }
+}
